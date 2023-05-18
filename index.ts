@@ -1,17 +1,12 @@
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import { User } from './src/models/user.js';
+// Levanta config de entorno
+// Llama a Express. Genera APP.
 
-const env = dotenv.config();
-process.env = env.parsed;
+import { env, loadEnv } from "./src/constants/env";
 
-mongoose.connect(process.env.MONGO_URI).then(() => console.log('Connected!'));
+loadEnv();
 
-const newUser = new User({
-    email: 'test@gmail.com',
-    password: 166516511
+import { app } from "./src";
+
+app.listen(env.PORT, () => {
+    console.log(`Server running on port ${env.PORT}`);
 });
-
-newUser.save().then().catch(console.dir)
-
-// User.find({}).then((response) => console.log(response));

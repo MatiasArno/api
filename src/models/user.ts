@@ -1,12 +1,18 @@
-import { model, Schema } from 'mongoose';
+import { model, Schema } from "mongoose";
+
+export type UserType = {
+    email: string;
+    password: string;
+    token?: string;
+};
 
 const userData = new Schema(
-	{
-		email: { type: String, required: true },
-		password: { type: String, required: true },
-		token: String,
-	},
-	{ collection: 'users', timestamps: true }
+    {
+        email: { type: String, required: true },
+        password: { type: String, required: true },
+        token: String,
+    },
+    { collection: "users", timestamps: true }
 );
 
-export const User = model('User', userData);
+export const User = model("User", userData);
