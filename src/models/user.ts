@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { model, Schema } from 'mongoose';
 
 export type UserType = {
     email: string;
@@ -10,9 +10,11 @@ const userData = new Schema(
     {
         email: { type: String, required: true },
         password: { type: String, required: true },
-        token: String,
+        token: String
     },
-    { collection: "users", timestamps: true }
+    { collection: 'users', timestamps: true }
 );
 
-export const User = model("User", userData);
+const User = model('User', userData);
+
+export default User;

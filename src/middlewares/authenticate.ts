@@ -1,29 +1,30 @@
-import { NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { NextFunction, Request, Response } from 'express';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import env from '../constants/env';
 
-import { UserService } from "../services/user";
+import UserService from '../services/user';
 
-const authenticate = async (req, res, next) => {
+const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+    let token = req.headers['authorization'];
+
+    if (!token) {
+        res.sendStatus(401);
+        return;
+    }
     try {
-        const token = req.headers["authorization"];
+        token = token.slice(7);
 
-        const username = req.get("username");
-        const role = req.get("role");
+        const decoded = jwt.verify(token, env.JWT_PRIVATE_KEY) as JwtPayload;
 
-        if (username && role) {
-            const user = await UserService.fetchOne({ username });
+        const user = await UserService.findOne(decoded.user.email);
 
-            if (role === user.role) {
-                req.user = user;
-                next();
-                return;
-            }
-            res.sendStatus(403);
+        if (user?.token === token) {
+            next();
             return;
         }
-        res.sendStatus(401);
-    } catch (err) {
-        next(err);
+        res.sendStatus(403);
+    } catch (error) {
+        res.sendStatus(403);
     }
 };
 

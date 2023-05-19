@@ -1,29 +1,30 @@
-import express, { Router } from "express";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
 
-import * as mongoose from "./db/mongo";
-import { UserService } from "./services/user";
-import authenticate from "./middlewares/authenticate";
+import * as mongoose from './db/mongo';
+import packageJson from '../package.json';
 
-// import pkg from '../package.json' assert { type: "json" };
+import { router as publicApiRouter } from './routes/public-api';
+import { router as apiRouter } from './routes/api';
+
 const app = express();
 
 app.use(express.json());
 app.use(cors());
+app.use('/public-api', publicApiRouter);
+app.use('/api', apiRouter);
 
 mongoose.configure();
 
-// ROUTES
-
-app.get("/ping", (req, res, next) => {
+app.get('/ping', (req, res, next) => {
     try {
-        res.json({ version: 1 });
+        res.json({ version: packageJson.version });
     } catch (err) {
         next(err);
     }
 });
 
-app.get("/ready", (req, res, next) => {
+app.get('/ready', (req, res, next) => {
     try {
         res.json(mongoose.getStatus());
     } catch (err) {
@@ -31,66 +32,4 @@ app.get("/ready", (req, res, next) => {
     }
 });
 
-// PUNTOS 1
-app.post("/public-api/register", async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            res.status(400).json({
-                message: "Email and password are required",
-            });
-            return;
-        }
-
-        const userExists = await UserService.exists(email);
-
-        if (userExists) {
-            res.status(409).json({ message: "User already exists" });
-            return;
-        }
-
-        await UserService.register(email, password);
-        res.status(201).json({
-            message: `${email} was created successfully!`,
-        });
-    } catch (err) {
-        next(err);
-    }
-});
-
-// PUNTOS 2
-app.post("/public-api/login", async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            res.status(400).json({
-                message: "Email and password are required.",
-            });
-            return;
-        }
-
-        const token = await UserService.login(email, password);
-
-        if (!token) {
-            res.status(401).json({ message: "Email or password are wrong." });
-            return;
-        }
-
-        res.json({ token });
-    } catch (err) {
-        next(err);
-    }
-});
-
-// PUNTO 3
-app.get("/api/users", authenticate, async (req, res, next) => {
-    try {
-        res.json(await UserService.getAllUsers());
-    } catch (err) {
-        next(err);
-    }
-});
-
-export { app };
+export default app;
